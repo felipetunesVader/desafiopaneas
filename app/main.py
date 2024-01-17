@@ -1,6 +1,9 @@
-from fastapi import FastAPI, Body, Depends, HTTPException
+from fastapi import FastAPI, Body, Depends, HTTPException, status
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 import schemas
 import models 
+import auth
 from database import Base, engine, SessionLocal
 from sqlalchemy.orm import Session
 
@@ -20,29 +23,34 @@ app = FastAPI()
 
 @app.post("/register", response_model=schemas.UserResponse)
 def create_user(user: schemas.UserCreate, session: Session = Depends(get_session)):
-    # Verifique se o usuário já existe
     db_user = session.query(models.User).filter(models.User.email == user.email).first()
     if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
     
-    # Crie uma nova instância do modelo User com todos os campos
+    hashed_password = auth.get_password_hash(user.hashed_password)  # Isso chama a função de hash da senha
     new_user = models.User(
         username=user.username,
         email=user.email,
-        hashed_password=user.hashed_password,  # Utilize a senha em texto puro conforme fornecida
-        is_active=True,         # O usuário está ativo por padrão
-        is_admin=False,         # Supomos que um novo usuário não seja admin por padrão
+        hashed_password=hashed_password,  # Use a senha hasheada
+        is_active=True,
+        is_admin=False,
     )
-    
-    # Adicione o novo usuário à sessão e faça commit
     session.add(new_user)
     session.commit()
     session.refresh(new_user)
     
-    # Retorne o usuário criado convertendo para UserResponse
-    # Usando model_validate em vez de from_orm
-    user_response = schemas.UserResponse.model_validate(new_user)
-    return user_response
+    # Aqui está a nova parte: gerar o token JWT e incluí-lo na resposta
+    access_token = auth.create_access_token(data={"sub": new_user.username})
+    user_dict = jsonable_encoder(new_user)
+    return {
+        "id": user_dict["id"],
+        "username": user_dict["username"],
+        "email": user_dict["email"],
+        "is_active": user_dict["is_active"],
+        "is_admin": user_dict["is_admin"],
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
 
 @app.get("/users/{user_id}", response_model=schemas.UserResponse)
 def read_user(user_id: int, session: Session = Depends(get_session)):
