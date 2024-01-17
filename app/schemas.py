@@ -1,12 +1,18 @@
 # schemas.py
 from pydantic import BaseModel, EmailStr
 
-# Schema para criar um novo usuário
+
 class UserCreate(BaseModel):
     username: str
     email: EmailStr
     hashed_password: str
 
+class UserUpdate(BaseModel):
+    username: str | None = None
+    email: EmailStr | None = None
+    is_active: bool | None = None
+    is_admin: bool | None = None
+    
 class UserResponse(BaseModel):
     id: int
     username: str

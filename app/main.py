@@ -44,6 +44,38 @@ def create_user(user: schemas.UserCreate, session: Session = Depends(get_session
     user_response = schemas.UserResponse.model_validate(new_user)
     return user_response
 
+@app.get("/users/{user_id}", response_model=schemas.UserResponse)
+def read_user(user_id: int, session: Session = Depends(get_session)):
+    db_user = session.query(models.User).filter(models.User.id == user_id).first()
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return schemas.UserResponse.model_validate(db_user)
+
+@app.put("/users/{user_id}", response_model=schemas.UserResponse)
+def update_user(user_id: int, user_update: schemas.UserUpdate, session: Session = Depends(get_session)):
+    db_user = session.query(models.User).filter(models.User.id == user_id).first()
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    for var, value in vars(user_update).items():
+        setattr(db_user, var, value) if value else None
+
+    session.commit()
+    session.refresh(db_user)
+    return schemas.UserResponse.model_validate(db_user)
+
+@app.delete("/users/{user_id}", response_model=schemas.UserResponse)
+def delete_user(user_id: int, session: Session = Depends(get_session)):
+    db_user = session.query(models.User).filter(models.User.id == user_id).first()
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    session.delete(db_user)
+    session.commit()
+    return schemas.UserResponse.model_validate(db_user)
+
+
+
    
 
 
