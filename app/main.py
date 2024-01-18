@@ -5,8 +5,11 @@ from fastapi.encoders import jsonable_encoder
 import schemas
 import models 
 import auth
+
 from dependencies import get_current_active_admin, get_current_user
 from database import Base, engine, get_session
+# from . import database
+# from . import dependencies
 from sqlalchemy.orm import Session
 
 
@@ -22,37 +25,37 @@ Base.metadata.create_all(engine)
 app = FastAPI()
 
 
-#@app.post("/register", response_model=schemas.UserResponse)
-@app.post("/register", 
-          response_model=schemas.UserResponse, 
-          status_code=status.HTTP_201_CREATED,
-          dependencies=[Depends(get_current_active_admin)],
-          responses={
-              201: {
-                  "description": "User successfully created",
-                  "content": {
-                      "application/json": {
-                          "example": {
-                              "id": 1,
-                              "username": "felipetunes",
-                              "email": "jota@example.com",
-                              "is_active": True,
-                              "is_admin": False,
-                              "access_token": "fake-jwt-token",
-                              "token_type": "bearer"
-                          }
-                      }
-                  },
-              },
-              400: {
-                  "description": "Email already registered",
-                  "content": {
-                      "application/json": {
-                          "example": {"detail": "Email already registered"}
-                      }
-                  },
-              }
-          })
+@app.post("/register", response_model=schemas.UserResponse)
+# @app.post("/register", 
+#           response_model=schemas.UserResponse, 
+#           status_code=status.HTTP_201_CREATED,
+#           dependencies=[Depends(get_current_active_admin)],
+#           responses={
+#               201: {
+#                   "description": "User successfully created",
+#                   "content": {
+#                       "application/json": {
+#                           "example": {
+#                               "id": 1,
+#                               "username": "felipetunes",
+#                               "email": "jota@example.com",
+#                               "is_active": True,
+#                               "is_admin": False,
+#                               "access_token": "fake-jwt-token",
+#                               "token_type": "bearer"
+#                           }
+#                       }
+#                   },
+#               },
+#               400: {
+#                   "description": "Email already registered",
+#                   "content": {
+#                       "application/json": {
+#                           "example": {"detail": "Email already registered"}
+#                       }
+#                   },
+#               }
+#           })
 def create_user(user: schemas.UserCreate, session: Session = Depends(get_session)):
     db_user = session.query(models.User).filter(models.User.email == user.email).first()
     if db_user:

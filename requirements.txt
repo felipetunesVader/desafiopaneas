@@ -5,7 +5,8 @@ psycopg2-binary
 python-jose>=3.2.0
 passlib[bcrypt]>=1.7.4
 python-multipart
-psycopg2
-PSYCOPG2-binary
+#psycopg2
+psycopg2-binary
 alembic 
 python-dotenv
+email-validator
