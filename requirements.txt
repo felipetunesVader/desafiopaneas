@@ -8,3 +8,4 @@ python-multipart
 psycopg2
 PSYCOPG2-binary
 alembic 
+python-dotenv

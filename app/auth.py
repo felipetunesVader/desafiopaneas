@@ -1,12 +1,16 @@
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
 from jose import jwt
+import os
+from dotenv import load_dotenv
 
-# As chaves SECRET_KEY e ALGORITHM devem ser configuradas como variáveis de ambiente
-# para melhor segurança. Por exemplo, você pode usar o pacote python-dotenv para isso.
-SECRET_KEY = "umasecretmuitosecreta"  # Mude para uma chave real em produção
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 100
+load_dotenv()
+
+
+SQLALCHEMY_DATABASE_URL = os.getenv('SQLALCHEMY_DATABASE_URL')
+SECRET_KEY = os.getenv('SECRET_KEY')
+ALGORITHM = os.getenv('ALGORITHM')
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 100))
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
