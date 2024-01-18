@@ -22,9 +22,37 @@ Base.metadata.create_all(engine)
 app = FastAPI()
 
 
-
-#@app.post("/register",  dependencies=[Depends(get_current_active_admin)])
-@app.post("/register", response_model=schemas.UserResponse)
+#@app.post("/register", response_model=schemas.UserResponse)
+@app.post("/register", 
+          response_model=schemas.UserResponse, 
+          status_code=status.HTTP_201_CREATED,
+          dependencies=[Depends(get_current_active_admin)],
+          responses={
+              201: {
+                  "description": "User successfully created",
+                  "content": {
+                      "application/json": {
+                          "example": {
+                              "id": 1,
+                              "username": "felipetunes",
+                              "email": "jota@example.com",
+                              "is_active": True,
+                              "is_admin": False,
+                              "access_token": "fake-jwt-token",
+                              "token_type": "bearer"
+                          }
+                      }
+                  },
+              },
+              400: {
+                  "description": "Email already registered",
+                  "content": {
+                      "application/json": {
+                          "example": {"detail": "Email already registered"}
+                      }
+                  },
+              }
+          })
 def create_user(user: schemas.UserCreate, session: Session = Depends(get_session)):
     db_user = session.query(models.User).filter(models.User.email == user.email).first()
     if db_user:
@@ -36,7 +64,7 @@ def create_user(user: schemas.UserCreate, session: Session = Depends(get_session
         email=user.email,
         hashed_password=hashed_password,  # Use a senha hasheada
         is_active=True,
-        is_admin=True,
+        is_admin=False,
     )
     session.add(new_user)
     session.commit()
@@ -62,7 +90,32 @@ def read_user(user_id: int, session: Session = Depends(get_session)):
         raise HTTPException(status_code=404, detail="User not found")
     return schemas.UserRead.model_validate(db_user)
 
-@app.put("/users/{user_id}", dependencies=[Depends(get_current_active_admin)])
+@app.put("/users/{user_id}", response_model=schemas.UserUpdate, 
+         dependencies=[Depends(get_current_active_admin)],
+         responses={
+             200: {
+                 "description": "User successfully updated",
+                 "content": {
+                     "application/json": {
+                         "example": {
+                             "id": 1,
+                             "username": "newfelipe",
+                             "email": "newjota@example.com",
+                             "is_active": True,
+                             "is_admin": False
+                         }
+                     }
+                 },
+             },
+             404: {
+                 "description": "User not found",
+                 "content": {
+                     "application/json": {
+                         "example": {"detail": "User not found"}
+                     }
+                 },
+             }
+         }) 
 def update_user(user_id: int, user_update: schemas.UserUpdate, session: Session = Depends(get_session)):
     db_user = session.query(models.User).filter(models.User.id == user_id).first()
     if db_user is None:
@@ -84,7 +137,29 @@ def update_user(user_id: int, user_update: schemas.UserUpdate, session: Session 
     )
     return updated_user_response
 
-@app.delete("/users/{user_id}", dependencies=[Depends(get_current_active_admin)])
+@app.delete("/users/{user_id}", 
+            dependencies=[Depends(get_current_active_admin)],
+            responses={
+                200: {
+                    "description": "User successfully deleted",
+                    "content": {
+                        "application/json": {
+                            "example": {
+                                "id": 1,
+                                "username": "deleteduser"
+                            }
+                        }
+                    },
+                },
+                404: {
+                    "description": "User not found",
+                    "content": {
+                        "application/json": {
+                            "example": {"detail": "User not found"}
+                        }
+                    },
+                }
+            })
 def delete_user(user_id: int, session: Session = Depends(get_session)):
     db_user = session.query(models.User).filter(models.User.id == user_id).first()
     if db_user is None:
