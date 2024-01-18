@@ -34,7 +34,7 @@ class UserResponse(BaseModel):
         #from_attributes = True
 
 # Schema para exibir informações do usuário
-class User(BaseModel):
+class UserRead(BaseModel):
     id: int
     username: str
     email: EmailStr
@@ -49,3 +49,6 @@ class User(BaseModel):
 class UserLogin(BaseModel):
     username: str
     hashed_password: str
+
+class UserDeletedResponse(BaseModel):
+    username: str
