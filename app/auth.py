@@ -6,7 +6,7 @@ from jose import jwt
 # para melhor segurança. Por exemplo, você pode usar o pacote python-dotenv para isso.
 SECRET_KEY = "umasecretmuitosecreta"  # Mude para uma chave real em produção
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 1
+ACCESS_TOKEN_EXPIRE_MINUTES = 100
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

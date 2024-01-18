@@ -24,6 +24,7 @@ app = FastAPI()
 
 
 @app.post("/register",  dependencies=[Depends(get_current_active_admin)])
+#@app.post("/register", response_model=schemas.UserResponse)
 def create_user(user: schemas.UserCreate, session: Session = Depends(get_session)):
     db_user = session.query(models.User).filter(models.User.email == user.email).first()
     if db_user:
@@ -35,7 +36,7 @@ def create_user(user: schemas.UserCreate, session: Session = Depends(get_session
         email=user.email,
         hashed_password=hashed_password,  # Use a senha hasheada
         is_active=True,
-        is_admin=True,
+        is_admin=False,
     )
     session.add(new_user)
     session.commit()
