@@ -1,28 +1,21 @@
-from sqlalchemy.orm import Session
-from models import User
-from auth import get_password_hash
-from database import Base, engine, get_session
+# init_db.py
 
-# Criar tabelas se elas não existirem
-Base.metadata.create_all(engine)
+from main import create_user
+from schemas import UserCreate
+from database import SessionLocal
 
-# Criar uma sessão com o banco de dados
-with Session(engine) as session:
-    # Verificar se já existe um usuário administrador
-    admin_user = session.query(User).filter_by(is_admin=True).first()
-    
-    if not admin_user:
-        # Criar um novo usuário administrador
-        hashed_password = get_password_hash("admin123")
-        new_admin_user = User(
-            username="admin",
-            email="admin@example.com",
-            hashed_password=hashed_password,
-            is_active=True,
-            is_admin=True,
-        )
-        
-        session.add(new_admin_user)
-        session.commit()
+# Cria uma sessão do banco de dados
+session = SessionLocal()
 
-# Agora você pode iniciar sua aplicação ou realizar outras tarefas de inicialização necessárias
+# Cria um usuário administrador
+admin_user = UserCreate(
+    username="admin",
+    email="admin@example.com",
+    password="adminpassword"
+)
+
+# Chamada à função create_user para adicionar o usuário administrador
+create_user(user=admin_user, session=session)
+
+# Fecha a sessão
+session.close()

@@ -27,9 +27,7 @@ class UserResponse(BaseModel):
     email: EmailStr = Field(..., example="jota@example.com", description="The email address of the user.")
     is_active: bool = Field(..., example=True, description="Indicates whether the user is active or not.")
     is_admin: bool = Field(..., example=False, description="Indicates whether the user has admin privileges or not.")
-    access_token: str = Field(..., example="your_jwt_token_here", description="The JWT access token for user authentication.")
-    token_type: str = Field(..., example="bearer", description="The type of the access token, typically 'bearer'.")
-
+   
     class Config:
         orm_mode = True
         
