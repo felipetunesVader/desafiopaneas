@@ -1,17 +1,41 @@
 version: '3.8'
 
 services:
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    hostname: "rabbitmq"
+
+  worker:
+    build: .
+    command: celery -A celery_app worker --loglevel=info
+    environment:
+      - CELERY_BROKER=amqp://guest:guest@rabbitmq:5672//
+      - CELERY_BACKEND=rpc://
+      - SQLALCHEMY_DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}
+      - SECRET_KEY=${SECRET_KEY}
+      - ALGORITHM=${ALGORITHM}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+      - YOUR_EMAIL=${YOUR_EMAIL}
+      - YOUR_PASSWORD=${YOUR_PASSWORD}
+    depends_on:
+      - rabbitmq
+      - db
+
   web:
     build: .
     ports:
       - "8000:80"
     environment:
-      - SQLALCHEMY_DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+      - SQLALCHEMY_DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}
       - SECRET_KEY=${SECRET_KEY}
       - ALGORITHM=${ALGORITHM}
       - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
     depends_on:
       - db
+      - rabbitmq
 
   db:
     image: postgres:13
@@ -21,7 +45,6 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
-    # Aqui adicionamos uma linha para definir o método de autenticação do host, se você decidir usá-la.
       - POSTGRES_HOST_AUTH_METHOD=trust
 
 volumes:

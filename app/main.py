@@ -5,11 +5,12 @@ from fastapi.encoders import jsonable_encoder
 import schemas
 import models 
 import auth
-
 from dependencies import get_current_active_admin, get_current_user
 from database import Base, engine, get_session
 from typing import List
 from sqlalchemy.orm import Session
+from celery_app import send_confirmation_email
+
 
 
 Base.metadata.create_all(engine)
@@ -70,7 +71,7 @@ def create_user(user: schemas.UserCreate, session: Session = Depends(get_session
     
     access_token = auth.create_access_token(data={"sub": new_user.username})
     user_dict = jsonable_encoder(new_user)
-    
+    send_confirmation_email.delay(user.email)
     return {
         "id": user_dict["id"],
         "username": user_dict["username"],
