@@ -14,6 +14,7 @@ import logging
 from logging.handlers import SocketHandler
 import json
 from pythonjsonlogger import jsonlogger
+from prometheus_fastapi_instrumentator import Instrumentator
 
 
 
@@ -32,6 +33,7 @@ logger.addHandler(logstash_handler)
 Base.metadata.create_all(engine)
 
 app = FastAPI()
+Instrumentator().instrument(app).expose(app)
 
 @app.post("/register", response_model=schemas.UserResponse)
 def create_user(user: schemas.UserCreate, session: Session = Depends(get_session)):
@@ -223,6 +225,12 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     access_token = auth.create_access_token(data={"sub": user.username})
     logger.info(f"User {form_data.username} successfully logged in.")
     return {"access_token": access_token, "token_type": "bearer"}
+
+@app.get("/")
+def read_root():
+    return "made by felipe antunes"
+    
+    
 
 
    

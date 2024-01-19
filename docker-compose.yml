@@ -73,7 +73,39 @@ services:
     depends_on:
       - elasticsearch
 
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus:/etc/prometheus  # Presume-se que você tenha um diretório prometheus com prometheus.yml nele
+    ports:
+      - "9090:9090"
+    depends_on:
+      - web  # Dependendo do seu serviço web para coletar métricas
+      - node-exporter  # Dependendo do node-exporter para coletar métricas do sistema
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin  # Você pode definir um usuário administrador
+      - GF_SECURITY_ADMIN_PASSWORD=admin  # Substitua 'admin' pela senha que você deseja para o administrador
+    volumes:
+      - grafana_data:/var/lib/grafana  # Persistência de dados do Grafana
+
+  node-exporter:
+    image: prom/node-exporter
+    ports:
+      - "9100:9100"
+
 volumes:
   postgres_data:
-  elasticsearch_data:  
+  elasticsearch_data:
     driver: local
+  grafana_data:  # Adicionado para persistência de dados do Grafana
+    driver: local
+  prometheus_data:  # Adicionado para persistência de dados do Prometheus
+    driver: local
+

@@ -12,3 +12,4 @@ python-dotenv
 email-validator
 celery
 python-json-logger
+prometheus-fastapi-instrumentator
