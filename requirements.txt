@@ -11,3 +11,4 @@ alembic
 python-dotenv
 email-validator
 celery
+python-json-logger
