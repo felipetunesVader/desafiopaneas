@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from database import get_session
 import models
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")  # Atualize para corresponder ao seu endpoint de login
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")  
 
 
 def get_current_user(db: Session = Depends(get_session), token: str = Depends(oauth2_scheme)) -> models.User:

@@ -23,7 +23,7 @@ logger.setLevel(logging.INFO)
 
 logstash_handler = logging.handlers.SocketHandler('logstash', 5000)
 
-formatter = jsonlogger.JsonFormatter()  # Usa a biblioteca python-json-logger para formatar em JSON
+formatter = jsonlogger.JsonFormatter()  
 logstash_handler.setFormatter(formatter)
 
 logger.addHandler(logstash_handler)
